@@ -19,4 +19,29 @@ put this at the end your .bashrc (linux) or .bash_profile (OS X) file
         {  hash tmux 2>&- && tmx $(hostname -s) ; } || echo >&2 "tmux did not startup on this machine (is it installed?) ..." 
      fi
 
+Other binaries are "statusline", "weather", "batterpower", and
+"cpuUsage", which are setup to grab information for your tmux
+status-line. 
+
+* Weather grabs an rss feed for Tokyo, but just grab that link and go to
+the source to find a city near you. Weather requires a variable to be in
+the environment $LOGS_DIR, which it uses to save a data file for rapid
+access and a symbols file for easy readability. Example symbols file is
+in "example/weather.symbols". I recommended that you put LOGS_DIR in a
+directory like Dropbox so that you keep your symbols and data linked
+between computers. Even better, setup the following cron (by typing
+"crontab -e") to update your data file every couple hours. You don't
+want to update too often or you will be hurting the bandwidth of the rss
+feed, so be conservative.
+
+   /path_to_bin/weather --dump 
+
+*Batterypower is setu to work on OS X, if anyone wants it to work
+on linux, please let me know some configuration info to grab that
+information and I'll update the script. 
+
+*CpuUsage displays "cput% mem% and load#" and this works in both OS X
+and linux machines that I have tested on.
+
+
 
