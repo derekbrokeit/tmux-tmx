@@ -1,0 +1,54 @@
+#!/bin/bash
+# this script generates a tmux-friendly status line depending on the computer
+
+if [[ "$COMP_TYPE" == "local" ]] ; then
+
+   sysStats="#[fg=colour13][ cpu:$(cpuUsage)%・mem:$(memUsage)%・load: $(loadavg) ]"
+   weather="$(cat ${LOGS_DIR}/weather.tmux)"
+   battery="$(percmonitor --tmux)"
+   case $HOSTNAME in
+      koguriyama* )
+         status="$battery $weather $sysStats"
+         ;;
+      momo*)
+         status="$weather $sysStats"
+         ;;
+      *)
+         status="#[fg=red][ Status-bar not set up yet ]"
+         ;;
+   esac
+elif [[ "$COMP_TYPE" == "remote" ]] ; then
+   #displaying qstat-info in status bar for remote
+   case $HOSTNAME in
+      harp)
+         QSTAT="/usr/local/bin/qstat"
+         ;;
+      tuba)
+         QSTAT="/usr/local/torque-2.1.8/bin/qstat"
+         ;;
+      mezzo)
+         QSTAT="/usr/local/torque-1.2.0p5/bin/qstat"
+         ;;
+   esac
+   info=$($QSTAT -Q | tail -1)
+
+   # limit of available runs, number of queued procs, number of running procs
+   limit=$(echo $info | awk '{ printf "%3d",$2}')
+   nQ=$(echo $info | awk '{ printf "%3d",$6}')
+   nR=$(echo $info | awk '{ printf "%3d",$7}')
+
+   # find the number of simulations by the current user
+   qme=$($QSTAT -u $USER | wc -l)
+   if [[ $qme -gt 0 ]] ; then
+      qme=$(expr $qme - 5)
+   fi 
+   qme=$( echo $qme | awk '{ printf "%3d",$1}')
+
+   status="#[fg=colour13][ qme:$qme・q:$nQ | r:$nR・lim:$limit ]"
+else
+   status="#[fg=red][ Status-bar not set up yet ]"
+fi
+
+echo "${status}#[default]"
+
+

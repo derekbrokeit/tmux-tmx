@@ -1,0 +1,22 @@
+A tmux initialization script that opens up a tmux with a special
+.tmux.conf file depending on the type of connection:
+
+    1. .tmux.conf: standard 
+    2. .tmux.conf.nested: nested tmux session
+    3. .tmux.conf.mini: small resolution screen version
+
+Launch the script with 
+
+    tmx $session_name
+    # $session_name is any name for the default session
+    # $session_name can be "-d" which is default and names the session after the HOST
+    
+It is recommended that you call this as soon as you open the shell, so
+put this at the end your .bashrc (linux) or .bash_profile (OS X) file
+
+     if [[ ! -n $TMUX ]] && [[ "$COMP_TYPE" != "central" ]] && [[ ! -n $SSH_CONNECTION ]] ; then
+        # This checks if tmux exists, and if it does, runs the startup script tmx
+        {  hash tmux 2>&- && tmx $(hostname -s) ; } || echo >&2 "tmux did not startup on this machine (is it installed?) ..." 
+     fi
+
+

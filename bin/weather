@@ -1,0 +1,255 @@
+#!/bin/bash
+
+# sometimes OSX addes wierd white space, this gets rid of it
+trim(){ echo $@ ; }
+
+# setup colors
+option=$1
+if [[ $option == -t ]] || [[ $option == --tmux ]] ; then
+   W="#[fg=white]"
+   w="#[fg=colour8]"
+   B="#[fg=colour12]"
+   C="#[fg=colour14]"
+   G="#[fg=green]"
+   Y="#[fg=yellow]"
+   R="#[fg=red]"
+   RB="#[fg=red,bold]"
+   N="#[default]"
+else
+   W=$WHITE
+   w=$BLACK_BRIGHT
+   B=$BLUE_BRIGHT
+   C=$CYAN_BRIGHT
+   G=$GREEN
+   Y=$YELLOW
+   R=$RED_BRIGHT
+   RB=${RED_BRIGHT}${BOLD}
+   N=$NC
+fi
+
+# ret the symbol or put a placemarker in the file
+getSym() { 
+   #check fo possible mistake!
+   if [[ "x$forcast" == "x" ]] ; then 
+     sym='---'
+     # this previously wrote an error file that was empty
+     # now just quit
+     #cp $dataFile $errorFile
+     #echo "processes_${HOSTNAME%.*}: $(ps -fu $LOGNAME | wc -l) / $(ulimit -a | grep --color=NO 'max user processes' | awk '{print $NF}') " >> $errorFile
+     return
+   fi
+     
+
+   # make sure the file exists
+   if [[ ! -f $symbolFile ]] ; then
+     touch $symbolFile
+   fi
+
+   sym=$(grep "$forcast" $symbolFile | awk -F':' '{print $2}' | head -1)
+   if [[ "x$sym" == "x" ]] ; then
+      echo "$forcast:---" >> $symbolFile 
+      sym='---'
+   fi
+
+   echo $sym
+}
+isDay(){
+   # return 0 if it is currently day, and 1 if night
+   hour=$(date +"%H" | sed 's/0*//')
+   minute=$(date +"%M" | sed 's/0*//')
+   
+   sunrise_time=$(echo $sunrise | awk '{print $1}')
+   sunrise_hour=$(echo $sunrise_time | awk -F':' '{print $1}' | sed 's/0*//')
+   sunrise_min=$(echo $sunrise_time | awk -F':' '{print $2}' | sed 's/0*//')
+
+   sunset_time=$(echo $sunset | awk '{print $1}')
+   sunset_hour=$( expr $(echo $sunset_time | awk -F':' '{print $1}' | sed 's/0*//') + 12)
+   sunset_min=$(echo $sunset_time | awk -F':' '{print $2}' | sed 's/0*//')
+
+   response=1
+   if [[ $hour -gt $sunrise_hour ]] && [[ $hour -lt $sunset_hour ]] ; then
+      response=0
+   elif [[ $hour -eq $sunrise_hour ]] || [[ $hour -eq $sunset_hour ]] ; then
+      if [[ $hour -eq $sunrise_hour ]] ; then
+         if [[ $minute -ge $sunrise_min ]] ; then
+            response=0
+         fi
+      else
+         if [[ $minute -le $sunset_min ]] ; then
+            response=0
+         fi
+      fi
+   fi 
+   echo $response
+}
+getSymColor(){
+   S_REP=☀
+   M_REP=☾
+   O_REP=☼
+   C_REP=☁
+   U_REP=☂
+   H_REP=☔
+   Z_REP=⚡
+   E_REP=、
+   blah=﹅
+   D_REP=﹆
+   V_REP=☿
+   F_REP=❄
+   A_REP=☃ 
+   B_REP=灰
+   G_REP=♒
+
+   symbol=$1
+   # go through and replace the characters with symbols
+
+   # first, find sun/moon
+   {
+      if [[ $(isDay) -eq 0 ]] ; then
+         echo $symbol |  sed  's/S/\'"${Y}${S_REP}"'\'"${N}"'/g' \
+            |  sed 's/O/\'"${Y}${O_REP}"'\'"${N}"'/g'
+      else
+         echo $symbol |  sed  's/S/\'"${C}${M_REP}"'\'"${N}"'/g' \
+            | sed 's/O/\'"${Y}${M_REP}"'\'"${N}"'/g'
+      fi
+   }        | sed 's/C/\'"${W}${C_REP}"'\'"${N}"'/g' \
+            | sed 's/U/\'"${B}${U_REP}"'\'"${N}"'/g' \
+            | sed 's/H/\'"${B}${H_REP}"'\'"${N}"'/g' \
+            | sed 's/Z/\'"${Y}${Z_REP}"'\'"${N}"'/g' \
+            | sed 's/E/\'"${C}${E_REP}"'\'"${N}"'/g' \
+            | sed 's/D/\'"${C}${D_REP}"'\'"${N}"'/g' \
+            | sed 's/V/\'"${W}${V_REP}"'\'"${N}"'/g' \
+            | sed 's/F/\'"${W}${F_REP}"'\'"${N}"'/g' \
+            | sed 's/A/\'"${W}${A_REP}"'\'"${N}"'/g' \
+            | sed 's/B/\'"${w}${B_REP}"'\'"${N}"'/g' \
+            | sed 's/G/\'"${W}${G_REP}"'\'"${N}"'/g' \
+            | sed 's/x/\ /g'
+
+   #echo "$symbol" 
+}
+
+dir=/Users/derekt/Dropbox/serverLogs
+symbolFile=$dir/weather.symbols
+tmuxFile=$dir/weather.tmux
+dataFile=$dir/weather.data
+errorFile="${dataFile}.error.$(date +%s)"
+
+# if we are supposed to dump, grab the data
+if [[ $option == *dump ]] || [[ $option == "-d" ]] ; then
+   tempDown=$HOME/.temp.${0##*/}
+   /opt/local/bin/w3m -dump http://www.rssweather.com/wx/jp/new+tokyo/wx.php >  $tempDown
+
+   forcast=$( trim $(grep -A 2 "Now" $tempDown | tail -1) )
+   temperature=$(trim  $(grep "Temperature" $tempDown | awk '{print $NF}' | cut -f 1 -d'D'))
+   humidity=$(trim $(grep -A 1 "Humid" $tempDown | tail -1 | cut -f 1 -d'%'))
+   windS=$(trim $(grep -A 1 "Wind Speed" $tempDown | tail -1 | awk '{print $1}'))
+   windDir=$(trim $(grep -A 1 "Wind Dir" $tempDown | tail -1 | awk '{print $1}'))
+   press=$(trim $(grep -A 1 "Barom" $tempDown | tail -1 | awk '{print $1}'))
+   dewpoint=$(trim $(grep -A 1 "Dew" $tempDown | tail -1 | cut -f 1 -d'D'))
+   heatInd=$(trim $(grep -A 1 "Heat Ind" $tempDown | tail -1 | cut -f 1 -d'D'))
+   windChill=$(trim $(grep -A 1 "Wind Chill" $tempDown | tail -1 | cut -f 1 -d'D'))
+   visibility=$(trim $(grep -A 1 "Visibility" $tempDown | tail -1 | awk '{print $1}'))
+   sunrise=$(trim $(grep -A 1 "Sunrise" $tempDown | tail -1))
+   sunset=$(trim $(grep -A 1 "Sunset" $tempDown | tail -1 ))
+
+   updated=$(trim $(grep "Update" $tempDown))
+
+
+   echo "$forcast;$temperature;$humidity;$windS;$windDir;$press;$dewpoint"\
+        ";$heatInd;$windChill;$visibility;$sunrise;$sunset;$updated" > $dataFile
+
+   rm $tempDown
+
+   # now save the tmux file
+   $0 --tmux > $tmuxFile
+
+   # leave with no trouble
+   exit 0
+fi
+
+data=$(tail -1 $dataFile)
+forcast=$(echo $data | awk -F';' '{print $1}')
+temperature=$(echo $data | awk -F';' '{print $2}')
+humidity=$(echo $data | awk -F';' '{print $3}')
+windS=$(echo $data | awk -F';' '{print $4}')
+windDir=$(echo $data | awk -F';' '{print $5}')
+press=$(echo $data | awk -F';' '{print $6}')
+dewpoint=$(echo $data | awk -F';' '{print $7}')
+heatInd=$(echo $data | awk -F';' '{print $8}')
+windChill=$(echo $data | awk -F';' '{print $9}')
+visibility=$(echo $data | awk -F';' '{print $10}')
+sunrise=$(echo $data | awk -F';' '{print $11}')
+sunset=$(echo $data | awk -F';' '{print $12}')
+updated=$(echo $data | awk -F';' '{print $13}')
+
+
+sym=$(getSym)
+col=$(getSymColor "$sym")
+
+# find the temperature based color
+if [[ $temperature -gt 35 ]] ; then
+   tempC=$RB
+elif [[ $temperature -gt 30 ]] ; then
+   tempC=$R
+elif [[ $temperature -gt 22 ]] ; then
+   tempC=$Y
+elif [[ $temperature -gt 15 ]] ; then
+   tempC=$G
+elif [[ $temperature -gt 10 ]] ; then
+   tempC=$C
+elif [[ $temperature -gt  0 ]] ; then
+   tempC=$B
+else
+   tempC=$W
+fi
+
+# provide the apropriate output
+case $option in
+   -f | --forcast )
+      echo -e "  Forcast:       $forcast [ $col ]"
+      echo -e "    temp:        $tempC"$(echo $temperature | awk '{printf "%2d",$1}')" C $N"
+      echo "    humidity:   "$(echo $humidity | awk '{printf "%3d",$1}')" %"
+      echo "    pressure:    "$(echo $press | awk '{printf "%4d",$1}')" mb"
+      echo "    visibility:  "$(echo $visibility | awk '{printf "%2d",$1}')" km"
+      ;;
+   -w | --wind )
+      echo "  Wind:"
+      echo "    wind speed:  "$(echo $windS | awk '{printf "%2d",$1}')" kph"
+      echo "    wind dir.:   $windDir"
+      echo "    wind chill:  $windChill C"
+      ;;
+   -s | --sun )
+      echo "  Sun:"
+      echo "    sunrise:     $sunrise"
+      echo "    sunset:      $sunset"
+      ;;
+   -t | --tmux )
+      # tmux status-line output
+      echo "${tempC}[${N} ${col} ${tempC}${temperature}]${N}"
+      ;;
+   -e | --experiment )
+      for(( a=2; a <= $(cat $symbolFile | wc -l) ; a++)) ; do
+         forcast=$(sed $a'q;d' $symbolFile | awk -F':' '{printf "%-20s", $1}' )
+         sym=$(sed $a'q;d' $symbolFile | awk -F':' '{print $2}' )
+         col=$(getSymColor "$sym")
+         echo -e "${forcast} [ $col ] "
+      done
+      ;;
+   *)
+      # standard weather output
+      echo "---Tokyo Weather ---"
+      echo -e "  Forcast:       $forcast [ "$col" ]"
+      echo -e "    temp:        $tempC"$(echo $temperature | awk '{printf "%2d",$1}')" C $N"
+      echo "    humidity:   "$(echo $humidity | awk '{printf "%3d",$1}')" %"
+      echo "    pressure:    "$(echo $press | awk '{printf "%4d",$1}')" mb"
+      echo "    visibility:  "$(echo $visibility | awk '{printf "%2d",$1}')" km"
+      echo "  Wind:"
+      echo "    wind speed:  "$(echo $windS | awk '{printf "%2d",$1}')" kph"
+      echo "    wind dir.:   $windDir"
+      echo "    wind chill:  $windChill C"
+      echo "  Sun:"
+      echo "    sunrise:     $sunrise"
+      echo "    sunset:      $sunset"
+      echo "  ($updated)"
+      ;;    
+esac
+
