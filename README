@@ -1,5 +1,4 @@
-A tmux initialization script that opens up a tmux with a special
-.tmux.conf file depending on the type of connection:
+tmx is a short, simple, startup script for a glorious tmux hud. Tmux is nitializated with this bash script that opens up a tmux with a special .tmux.conf file depending on the type of connection:
 
     1. .tmux.conf: standard 
     2. .tmux.conf.nested: nested tmux session
