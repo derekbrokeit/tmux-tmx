@@ -1,0 +1,64 @@
+#!/bin/bash
+battery=$(pmset -g)
+
+charge=$(batterypower | awk '{print $1}') #make sure to just grab the number 
+chargeState=$(echo -ne "$battery" | grep '*' | awk '{ print $1 }') 
+
+## colors
+if [[ "$1" == "--tmux" ]] ; then
+   NON='#[default]'
+   BLD='#[bold]'
+   BLINK='#[blink]'
+   RED='#[fg=red]'
+   RLK='#[fg=red,blink]'
+   GRN='#[fg=green]'
+   YEL='#[fg=yellow]'
+   
+   shift 1
+else
+   NON='\033[00m'
+   BLD='\033[01m'
+   BLINK='\033[05m'
+   RED='\033[01;31m'
+   RLK="${BLINK}${RED}"
+   GRN='\033[01;32m'
+   YEL='\033[01;33m'
+fi
+
+color="${RED}${BLINK}${BLD}"
+
+# is it chargin?
+case "${chargeState}" in
+   'AC')
+      BATSTT="$BLD+$NON"
+      ;;
+   'Battery')
+      BATSTT="$BLD-$NON"
+      ;;
+   *)
+      BATSTT="$BLD?$NON"
+      ;;
+esac
+
+if [[ $(echo "$charge > 99" | bc) -eq 1 ]] ; then
+   BATSTT="$BLD=$NON"
+fi
+
+# wait, no problem? then display a less scary color
+if [[ $(echo "$charge > 50" | bc) -eq 1 ]] ; then
+   color="$GRN"
+elif [[ $(echo "$charge > 20" | bc) -eq 1 ]] ; then
+   color="$YEL"
+fi
+
+# format the length
+charge=$(echo "$charge" | awk '{printf "%5.1f",$1}' )
+
+if [[ $1 == "--ascii" ]] ; then
+   #echo -e "${color}${charge}%${NON} ${BATSTT}"
+   echo '#[fg=green]green'
+else
+   echo -e "${color}[${charge}%${NON} ${BATSTT}${NON}${color}]${NON}"
+fi
+
+# end of file
