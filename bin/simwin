@@ -1,0 +1,64 @@
+#!/bin/bash
+
+#first, find out if there is already a "sims" window
+winList=$(tmux list-windows | awk '{print $1 $2}')
+if [[ "x$(echo $winList | grep sims )" != "x" ]] ; then
+   #echo "entered if"
+   # the window, exists, so find it
+   for win in $winList
+   do
+      winNumbs=$(echo $win | awk -F':' '{print $1}')
+      winNames=$(echo $win | awk -F':' '{print $2}')
+      #echo "$winNumbs <> $winNames"
+      if [[ $winNames == "sims" ]] ; then
+         simWin="$winNumbs"
+      fi
+   done
+   # kill the current sims window
+   #echo "killing $simWin > "
+   tmux kill-window -t $simWin
+   #echo "attempted kill $simWin"
+else
+   simWin=$2
+fi
+
+# grab the base_session
+base_session="$1"
+if [[ "$1" == "--default" ]] || [[ "$1" == "-d" ]] || [[ "$#" -eq 0 ]] ; then
+   base_session=$(hostname -s)
+   if [[ "x$simWin" == "x" ]] ; then
+      simWin=9
+   fi
+fi
+
+# generate the window now
+simNum=$(sims --num)
+if [[ $simNum -gt 0 ]] ; then
+   
+   # do the same for any additional simulation windows
+   i=1
+   while [[ i -le $simNum ]] ; do
+      # the directory to the sim
+      dir=$(sims --dir $i)
+
+      if [[ $i -eq 1 ]] ; then
+         # gotta create the window, first
+         tmux neww -t $base_session:$simWin -n 'sims' 
+         tmux select-window -t $simWin
+      else
+         # now split the window
+         tmux splitw -v -t $vbase_session:$simWin 
+      fi
+      tmux send-keys -t $base_session:$simWin "cd $dir; PS1='\[${YELLOW_BRIGHT}\]$(basename $dir) \$ \[${NC}\]'; clear" C-m
+      #tmux send-keys -t $base_session:$simWin "clear" C-m
+      #waitUntilDeleted $TMUX_PROMPT_HERE_FILE
+      
+      printf "%3d: %-20s %s " "$i" "$(basename $dir)" "<"
+      tmux select-layout -t $base_session:$simWin tiled
+
+      let i++
+   done
+else
+   echo "resimwin: No simulations in database "
+   #tmux neww -t $base_session:$simWin -n "sims"
+fi

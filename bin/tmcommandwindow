@@ -1,0 +1,11 @@
+#!/bin/bash
+
+prompt="$(printf $YELLOW_BRIGHT)>> $(printf $NC)"
+press="$(printf $GREEN_BRIGHT)Press any key to leave ...$(printf $NC)"
+
+read -p "$prompt" command
+
+tmux neww "
+            $command  
+            read -p  \"$press\" -n 1
+            "

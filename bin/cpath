@@ -1,0 +1,19 @@
+#!/bin/bash
+# copies the given path or PWD to clipboard
+
+#tmp=$(mktemp -t $(basename $0).XXXX)
+#echo $tmp
+#abspath $@ > $tmp
+#
+#cat $tmp
+#cat $tmp | pbcopy
+#
+#rm $tmp
+
+if [[ "$1" == "-s" ]] ; then
+   shift 1
+   pbcopy -s $(abspath $@)
+else
+   pbcopy $(abspath $@)
+fi
+
