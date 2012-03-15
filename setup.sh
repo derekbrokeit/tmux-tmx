@@ -7,7 +7,7 @@ cd ${0%/*}/conf
 ## setup symbolic links
 i=0
 for file in $(ls) ; do
-  if [[ ( ! -L "$HOME/.$file" ) && ( $file != *.sh ) && ( $file != README* ) ]] ; then
+  # if [[ ( ! -L "$HOME/.$file" ) && ( $file != *.sh ) && ( $file != README* ) ]] ; then
 
     if [[ $i -eq 0 ]] ; then
       echo "## -- setting up symbolic links -- ##"
@@ -20,7 +20,7 @@ for file in $(ls) ; do
 
   #else
     #rm $HOME/.$file
-  fi
+  # fi
 done
 
 ## return to the original directory
