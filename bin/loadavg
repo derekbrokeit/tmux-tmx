@@ -1,0 +1,4 @@
+#!/bin/bash
+# produces load averages for
+# past 1 minute | past 5 minutes | past 15 mintues
+uptime | awk 'i=NF-2 { print $i,$(i+1),$(i+2)}'

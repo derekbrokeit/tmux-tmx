@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# temp file
+tmp=$(mktemp -t $(basename $0).XXXX)
+
+# is this a silent copy?
+if [[ $1 == "-s" ]] ; then
+   silent=0
+   shift 1
+else
+   silent=1
+fi
+
+# saves all input to a file
+if [[ "x$@" != "x" ]] ; then
+   echo $@ > $tmp
+else
+   cat /dev/stdin > $tmp
+fi
+
+# uses osascript to set the MacOSX pastebaord to the contents of the file
+/usr/bin/osascript -e 'tell application "System Events"' -e 'set the clipboard to (read posix file "'$tmp'" as text)' -e 'end tell'
+
+# print it out to the stdout if not silent
+if [[ $silent -eq 1 ]] ; then
+   cat $tmp
+fi
+
+# now remove the temp-fil
+rm $tmp
+

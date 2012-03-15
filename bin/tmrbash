@@ -1,0 +1,19 @@
+#!/bin/bash
+
+currentWindow=$(tmux list-windows | grep "(active)" | awk '{print $1}' | cut -f 1 -d:)
+currentPane=$(tmux list-panes | grep "(active)" | awk '{print $1}' | cut -f 1 -d:)
+lastPaneThisWindow=$(tmux list-panes | tail -1 | awk '{print $1}' | cut -f 1 -d:)
+
+i=0
+while [[ $i -le $lastPaneThisWindow ]] ; do 
+  tmux select-pane -t $i
+  sleep 0.5
+  windowName=$(tmux display -p '#W')
+  if [[ $windowName == "$(basename $SHELL)" ]] ; then
+    tmux send-keys "^a" "^k" "source ~/.bashrc" "Enter"
+  fi
+  let i++
+done
+
+#cleanup by going back
+tmux select-pane $currentPane

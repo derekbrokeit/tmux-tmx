@@ -53,10 +53,9 @@ TEMP_TERM=$TERM
 TEMP_TERM_SUFFIX=${TERM#$(echo $TERM | cut -f 1 -d'-')}
 TERM="xterm${TEMP_TERM_SUFFIX}"
 
-# this checks if the user is connecting from softbank
-# this is helpful for my current cellphone
-isphone
-if [[ $? -eq 0 ]] ; then
+# this checks if the terminal width is too small for regular status
+# this is helpful for phones or small terminal windows
+if [[ $(tput cols) -lt 100 ]] ; then
    TERM=xterm-256color
    fileConf=$TMUX_CONF_MINI
 
