@@ -1,0 +1,7 @@
+source-file $HOME/.tmux.conf
+
+#status changes
+     
+set -g status-left '#[fg=green]#(hostname -s) ] #[default]['
+set -g status-right '] #[fg=colour13] #(percmonitor --tmux) #[fg=colour13][ cpu:#(cpuUsage)% ] #[fg=colour12][ %Y-%m-%d (#(dayofweek)) %R #[default]'
+

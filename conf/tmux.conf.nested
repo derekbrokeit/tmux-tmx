@@ -1,0 +1,20 @@
+source-file $HOME/.tmux.conf
+
+#status changes
+set -g status-left '#[fg=blue]#(hostname | cut -f 1 -d.) ] #[default]['
+set -g status-right '] #(statusline) #[default]'
+
+# change the color of panes 
+set -g pane-active-border-fg red 
+set -g pane-border-fg colour233
+
+# change background of the status-line
+set -g status-bg colour237
+
+## key-binding
+# reset prefix back to default C-b for nested session 
+unbind C-a
+unbind r
+set -g prefix C-b
+bind-key C-b next-window
+

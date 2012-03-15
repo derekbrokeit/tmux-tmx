@@ -1,0 +1,23 @@
+source $HOME/.tmux.conf.nested
+
+#status changes
+set -g status off
+#set -g status-left  '#[fg=colour12]#(hostname | cut -f 1 -d.)#[default]'
+#set -g status-right '#[fg=magenta]irssi#[default]'
+
+set -g status-left-length 150
+
+set -g status-bg black
+set -g status-fg black
+
+set-window-option -g window-status-current-bg black
+set-window-option -g window-status-current-fg black
+
+# additional settings
+setw -g mode-mouse on
+setw -g aggressive-resize on
+set -g default-terminal "screen-256color"
+setw -g mode-keys vi
+
+# make sure the non-main panes are small
+setw -g other-pane-width 20
