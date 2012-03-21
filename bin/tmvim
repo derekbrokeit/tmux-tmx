@@ -1,0 +1,18 @@
+#!/bin/bash
+
+OLD_TERM=$TERM
+
+preFix=$(echo $TERM | cut -f1 -d-)
+postFix=${TERM#*-}
+# test if needs hyphen
+if [[ "x$postFix" == "x" ]] ; then
+  postFix=
+else
+  postFix="-$postFix"
+fi
+
+export TERM="xterm$postFix"
+vim $@
+
+# reset TERM
+export TERM=$OLD_TERM
