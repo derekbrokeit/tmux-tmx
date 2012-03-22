@@ -5,7 +5,6 @@
 trap 'killListener' EXIT
 OLD_TERM=$TERM
 function killListener() {
-  echo "returning TERM=$TERM --> $OLD_TERM"
   export TERM=$OLD_TERM
 }
 TERM_POSTFIX=${TERM#*-}
