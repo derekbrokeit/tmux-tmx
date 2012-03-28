@@ -1,18 +1,47 @@
 #!/bin/bash
 
-OLD_TERM=$TERM
+progn=mutt
+prog="source ~/.zshrc; sleep 5; /opt/local/bin/mutt"
+winnum=7
 
-preFix=$(echo $TERM | cut -f1 -d-)
-postFix=${TERM#*-}
-# test if needs hyphen
-if [[ "x$postFix" == "x" ]] ; then
-  postFix=
-else
-  postFix="-$postFix"
+base_session="$progn"
+socket="-L $progn"
+fileconf="$HOME/.tmux.conf.invisible"
+
+# make sure tmux exists first
+if [[ -x $(which tmux) ]] ; then
+  if [[ "x$(tmux $socket ls 2> /dev/null)" == "x" ]] ; then
+    # make a new mutt session
+    tmux $socket -f $fileconf new-session -d -s $base_session "$prog"
+  fi
+
+  # Kill defunct sessions first
+  function tmclean(){
+  # Kill defunct sessions first
+  old_sessions=$(tmux $socket ls 2>/dev/null | egrep "^[0-9]{14}" | cut -f 1 -d:)
+    for old_session_id in $old_sessions; do
+      # echo "kill old tm-session: $old_session_id"
+      tmux $socket kill-session -t $old_session_id
+    done
+  }
+  tmclean
+
+  # setup configuration files for this session
+  # Session is is date and time to prevent conflict
+  session_id=`date +"%Y%m%d%H%M%S"`
+  # Create a new session (without attaching it) and link to base session 
+  # to share windows
+  tmux $socket new-session -d -t $base_session -s $session_id
+  
+  # Attach to the new session @window:0
+  tmux $socket select-window -t  $session_id:0
+  if [[ -n $winnum && -n $TMUX ]] ; then
+    tmux neww -t 7 -n $progn "tmux $socket attach-session -t $session_id \; source-file $fileconf "
+  else
+    tmux $socket attach-session -t $session_id \; source-file $fileconf
+    # When we detach from it, kill the session
+    tmux $socket kill-session -t $session_id 2> /dev/null
+  fi
+
 fi
 
-export TERM="xterm$postFix"
-tmux neww -n mutt -t 7 "mutt $@"
-
-# reset TERM
-export TERM=$OLD_TERM
