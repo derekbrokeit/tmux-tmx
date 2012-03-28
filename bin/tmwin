@@ -21,7 +21,7 @@ exe="$@"
 if [[ "x$(which tmux)" != "x"  ]] ; then
   # tmux exists
   tmux rename-window "$prog"
-  tmux -f $TMUX_CONF_TMWIN -L tmwin new -s $prog -n $prog "$exe"
+  tmux -f $TMUX_CONF_TMWIN -L $prog new -s $prog -n $prog "$exe"
   tmux setw automatic-rename on > /dev/null
 else 
   # tmux doesn't exists
