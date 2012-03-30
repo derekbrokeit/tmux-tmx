@@ -11,6 +11,10 @@
 # passing arguments
 trim() { echo $1; }
 
+if [[ $SHELL == *zsh* ]] ; then
+  . $HOME/.zsh/path.zsh
+fi
+
 if [[ -z "$1" ]]; then
     echo "Specify session name as the first argument"
     exit
