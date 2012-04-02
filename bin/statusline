@@ -1,6 +1,7 @@
 #!/bin/bash
 # this script generates a tmux-friendly status line depending on the computer
 
+COMP_TYPE=$(cat $HOME/.comptype 2> /dev/null)
 if [[ "$COMP_TYPE" == "local" ]] ; then
 
    sysStats="#[fg=colour13][ cpu:$(cpuUsage)%・mem:$(memUsage)%・load: $(loadavg) ]"
