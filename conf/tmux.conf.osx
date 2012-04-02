@@ -1,3 +1,5 @@
+# source the main file
+source-file ~/.tmux.conf
 
 # This is for setting up tmux-pasteboard
 # tmux-pasteboard: https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard

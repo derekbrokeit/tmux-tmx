@@ -45,6 +45,19 @@ TMUX_CONF_OSX=$TMUX_CONF.osx
 # setup configuration files for this session
 fileConf=$TMUX_CONF
 insidetmux=0
+# OS specific configurations
+if [[ "$(uname)" == "Darwin" ]] ; then
+  # Add additional specifications for osx user
+  fileConf="$TMUX_CONF_OSX"
+fi
+# this checks if the terminal width is too small for regular status
+# this is helpful for phones or small terminal windows
+if [[ $(tput cols) -lt 100 ]] ; then
+   TERM=xterm-256color
+   fileConf=$TMUX_CONF_MINI
+
+fi
+# nested
 if [[ $TERM == screen* ]] ; then
    # make sure to use the nested-tmux configuration file
    insidetmux=1
@@ -60,19 +73,6 @@ tmux_nb=$(trim `tmux ls 2> /dev/null | grep "^$base_session" | wc -l`)
 TEMP_TERM=$TERM
 TEMP_TERM_SUFFIX=${TERM#$(echo $TERM | cut -f 1 -d'-')}
 TERM="xterm${TEMP_TERM_SUFFIX}"
-
-# this checks if the terminal width is too small for regular status
-# this is helpful for phones or small terminal windows
-if [[ $(tput cols) -lt 100 ]] ; then
-   TERM=xterm-256color
-   fileConf=$TMUX_CONF_MINI
-
-fi
-
-if [[ "$(uname)" == "Darwin" ]] ; then
-  # Add additional specifications for osx user
-  fileConf="$fileConf -f $TMUX_CONF_OSX"
-fi
 
 # creating the base_session, but not connecting to it
 if [[ "$tmux_nb" == "0" ]]; then
@@ -127,7 +127,8 @@ if [[ -z "$TMUX" ]]; then
 
    # Attach to the new session @window:0
    tmux select-window -t  $session_id:0
-   tmux attach-session -t $session_id \; source-file $fileConf
+   echo $fileConf
+   tmux attach-session -t $session_id \; source-file $fileConf 
 
    # When we detach from it, kill the session
    tmux kill-session -t $session_id 2> /dev/null
