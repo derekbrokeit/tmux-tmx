@@ -96,7 +96,7 @@ getSymColor(){
    V_REP=☿
    F_REP=❄
    A_REP=☃ 
-   B_REP=灰
+   B_REP=埃
    G_REP=♒
 
    symbol=$1
