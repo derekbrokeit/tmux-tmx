@@ -34,6 +34,10 @@ if [[ $TERM != xterm* ]] && [[ $TERM != screen* ]] ; then
 fi
 
 ## startup files
+TMUX_CONF=$HOME/.tmux.conf
+TMUX_CONF_NEST=$TMUX_CONF.nested
+TMUX_CONF_MINI=$TMUX_CONF.mini
+TMUX_CONF_OSX=$TMUX_CONF.osx
 # setup configuration files for this session
 fileConf=$TMUX_CONF
 insidetmux=0
@@ -59,6 +63,11 @@ if [[ $(tput cols) -lt 100 ]] ; then
    TERM=xterm-256color
    fileConf=$TMUX_CONF_MINI
 
+fi
+
+if [[ "$(uname)" == "Darwin" ]] ; then
+  # Add additional specifications for osx user
+  fileConf="$fileConf -f $TMUX_CONF_OSX"
 fi
 
 # creating the base_session, but not connecting to it
@@ -99,7 +108,9 @@ if [[ -z "$TMUX" ]]; then
           tmux kill-session -t $old_session_id
       done
    }
+   tmux ls
    tmclean
+   tmux ls
 
    # setup configuration files for this session
    # Session is is date and time to prevent conflict

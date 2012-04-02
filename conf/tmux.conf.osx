@@ -1,0 +1,4 @@
+
+# This is for setting up tmux-pasteboard
+# tmux-pasteboard: https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard
+set-option -g default-command "/opt/local/bin/reattach-to-user-namespace -l /opt/local/bin/zsh "
