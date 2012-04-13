@@ -2,6 +2,10 @@
 battery=$(pmset -g)
 
 charge=$(batterypower | awk '{print $1}') #make sure to just grab the number 
+if [[ "x$charge" == "x" ]] ; then
+  # No battery seems to be present
+  exit 0
+fi
 chargeState=$(echo -ne "$battery" | grep '*' | awk '{ print $1 }') 
 
 ## colors
