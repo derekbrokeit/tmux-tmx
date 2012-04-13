@@ -8,10 +8,10 @@ if [[ "$COMP_TYPE" == "local" ]] ; then
    weather="$(cat ${LOGS_DIR}/weather.tmux)"
    battery="$(percmonitor --tmux)"
    case $HOSTNAME in
-      koguriyama* )
+      k* )
          status="$battery $weather $sysStats"
          ;;
-      momo*)
+      mo*)
          status="$weather $sysStats"
          ;;
       *)
