@@ -50,10 +50,13 @@ if [[ "$(uname)" == "Darwin" ]] ; then
 fi
 # this checks if the terminal width is too small for regular status
 # this is helpful for phones or small terminal windows
-if [[ $(tput cols) -lt 100 ]] ; then
-   TERM=xterm-256color
-   fileConf=$TMUX_CONF_MINI
-
+if [[ -n $COLUMNS ]] ; then
+  # tput cols seems to always output a default of 80 when used as a variable or redirected value
+  # therefore, we must limit this to zsh, which has the COLUMNS variable
+  if [[ $COLUMNS -lt 100 ]] ; then
+    TERM=xterm-256color
+    fileConf=$TMUX_CONF_MINI
+  fi
 fi
 # nested
 if [[ $TERM == screen* ]] ; then
