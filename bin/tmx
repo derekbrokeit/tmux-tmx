@@ -11,7 +11,18 @@
 # passing arguments
 trim() { echo $1; }
 
-source $HOME/.path
+if [[ -f $HOME/.path ]] ; then
+    source $HOME/.path
+else
+    exit 1
+fi
+
+if [[ $1 == "--no-clean" ]] ; then
+    shift 1
+    NO_CLEAN=1
+else
+    NO_CLEAN=0
+fi
 
 if [[ -z "$1" ]]; then
     echo "Specify session name as the first argument"
@@ -113,9 +124,10 @@ if [[ -z "$TMUX" ]]; then
           tmux kill-session -t $old_session_id
       done
    }
-   tmux ls
-   tmclean
-   tmux ls
+
+   if [[ NO_CLEAN == 0 ]] ; then
+       tmclean
+   fi
 
    # setup configuration files for this session
    # Session is is date and time to prevent conflict
@@ -128,7 +140,6 @@ if [[ -z "$TMUX" ]]; then
 
    # Attach to the new session @window:0
    tmux select-window -t  $session_id:0
-   echo $fileConf
    tmux attach-session -t $session_id \; source-file $fileConf 
 
    # When we detach from it, kill the session
