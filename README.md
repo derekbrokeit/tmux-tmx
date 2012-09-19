@@ -36,8 +36,8 @@ between computers. Even better, setup the following `cron` (by typing
 want to update too often or you will be hurting the bandwidth of the rss
 feed, so be conservative.
 
-   # update every 2 hours:
-   0 */2 * * * /path_to_bin/weather --dump 
+    # update every 2 hours:
+    0 */2 * * * /path_to_bin/weather --dump 
 
 * Batterypower is setu to work on OS X, if anyone wants it to work
 on linux, please let me know some configuration info to grab that
