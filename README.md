@@ -34,10 +34,11 @@ directory like Dropbox so that you keep your symbols and data linked
 between computers. Even better, setup the following `cron` (by typing
 `crontab -e`) to update your data file every couple hours. You don't
 want to update too often or you will be hurting the bandwidth of the rss
-feed, so be conservative.
-
-    # update every 2 hours:
-    0 */2 * * * /path_to_bin/weather --dump 
+feed, so be conservative. Use the following to update weather every two hours
+    
+        $ crontab -e 
+        # in the editor, write this:
+        0 */2 * * * /path_to_bin/weather --dump 
 
 * Batterypower is setu to work on OS X, if anyone wants it to work
 on linux, please let me know some configuration info to grab that
