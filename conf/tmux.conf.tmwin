@@ -4,6 +4,7 @@ set -g status-fg black
 set -g status-left-length 150
 set -g status-left  '#[fg=cyan]#T #[default]'
 set -g status-right ' #[fg=blue]#W #[default]'
+set -g status-position top
 
 # additional settings
 setw -g mode-mouse on
