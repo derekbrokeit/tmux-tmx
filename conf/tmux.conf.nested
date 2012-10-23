@@ -1,7 +1,7 @@
 source-file $HOME/.tmux.conf
 
 #status changes
-set -g status-left '#[fg=blue]#(hostname | cut -f 1 -d.) ] #[default]['
+set -g status-left '#[fg=blue,bold]#(hostname | cut -f 1 -d.) ] #[default]['
 set -g status-right '] #(statusline) #[default]'
 set -g status-position top
 
