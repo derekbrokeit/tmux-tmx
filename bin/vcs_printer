@@ -1,0 +1,109 @@
+#!/bin/sh
+
+# is git available?
+type git >/dev/null 2>&1
+if [ "$?" -ne 0 ]; then
+    return
+fi
+
+# get tmux cwd (from tmux-powerline)
+get_tmux_cwd() {
+    local env_name=$(tmux display -p "TMUXPWD_#I_#P")
+    local env_val=$(tmux show-environment | grep "$env_name")
+    # The version below is still quite new for tmux. Uncommented this in the future :-)
+    #local env_val=$(tmux show-environment "$env_name" 2>&1)
+
+    if [[ ! $env_val =~ "unknown variable" ]]; then
+        local tmux_pwd=$(echo "$env_val" | sed 's/^.*=//')
+        echo "$tmux_pwd"
+    fi
+}
+tmux_path=$(get_tmux_cwd)
+cd "$tmux_path"
+
+# is this git? if not don't print anything
+[[ -z $(git rev-parse --git-dir 2> /dev/null) ]] && exit
+
+# symbols
+staged_symbol="⊕ "
+other_symbol="⋯ "
+modified_symbol="﹢"
+
+branch_name(){
+    # Quit if this is not a Git repo.
+    branch=$(git symbolic-ref HEAD 2> /dev/null)
+    if [[ -z $branch ]] ; then
+        # attempt to get short-sha-name
+        branch=":$(git rev-parse --short HEAD 2> /dev/null)"
+    fi
+    if [ "$?" -ne 0 ]; then
+        # this must not be a git repo
+        return
+    fi
+
+    # clean off unnecessary information
+    branch=${branch##*/}
+
+    echo $branch
+}
+
+comparison() {
+
+    refs=$(git symbolic-ref HEAD 2> /dev/null)
+    branch=${refs##*/}
+    if [[ -z $branch ]] ; then
+        branch=$(git rev-parse --short HEAD)
+    fi
+
+    # look up this branch in the configuration
+    remote=$(git config branch.$branch.remote)
+    remote_ref=$(git config branch.$branch.merge)
+
+    # if this branch is not connected to a remote
+    [[ -z $remote ]] && return
+
+    # convert the remote ref into the tracking ref... this is a hack
+    remote_branch=$(expr $remote_ref : 'refs/heads/\(.*\)')
+    tracking_branch=refs/remotes/$remote/$remote_branch
+
+    # make a list of behind/ahead left/right sha's
+    tmpLR=/tmp/$(basename $0).left-right
+    git rev-list --left-right $tracking_branch...HEAD &> $tmpLR
+
+    numAhead=$(grep ">" $tmpLR | wc -l)
+    numBehind=$(grep "<" $tmpLR | wc -l)
+
+    # print out the information
+    if [[ $numBehind -gt 0 ]] ; then
+        local ret="↓ $numBehind"
+    fi
+    if [[ $numAhead -gt 0 ]] ; then
+        local ret="${ret}↑ $numAhead"
+    fi
+    echo $ret
+}
+
+branch=$( branch_name )
+compare=$(comparison)
+
+# get file counts
+staged=$(git diff --staged --name-status | wc -l )
+modified=$(git ls-files --modified | wc -l)
+other=$(git ls-files --others --exclude-standard | wc -l)
+
+[[ $staged   -gt 0 ]] && staged=${staged_symbol}$staged       || staged=
+[[ $modified -gt 0 ]] && modified=${modified_symbol}$modified || modified=
+[[ $other    -gt 0 ]] && other=${other_symbol}$other          || other=
+
+if [[ ! -z $staged || ! -z $modified || ! -z $other ]] ; then
+    add="| #[fg=green]${staged}#[fg=red]${modified}#[fg=white]${other} "
+else
+    add=
+fi
+[[ ! -z $comparison ]] && comparison=$comparison" "
+
+if [[ $1 == "--tmux" ]] ; then
+    echo "#[fg=cyan][ #[fg=magenta,bold]${branch}#[fg=white]$comparison ${add}#[fg=cyan]] "
+else
+    echo ${branch} $comparison '|' $staged $modified $other
+fi
