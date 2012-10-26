@@ -25,6 +25,7 @@ cd "$tmux_path"
 [[ -z $(git rev-parse --git-dir 2> /dev/null) ]] && exit
 
 # symbols
+branch_symbol="⭠"
 staged_symbol="⊕ "
 other_symbol="⋯ "
 modified_symbol="﹢"
@@ -48,13 +49,12 @@ branch_name(){
 }
 
 comparison() {
-
     refs=$(git symbolic-ref HEAD 2> /dev/null)
     branch=${refs##*/}
     if [[ -z $branch ]] ; then
         branch=$(git rev-parse --short HEAD)
     fi
-
+    
     # look up this branch in the configuration
     remote=$(git config branch.$branch.remote)
     remote_ref=$(git config branch.$branch.merge)
@@ -82,7 +82,6 @@ comparison() {
     fi
     echo $ret
 }
-
 branch=$( branch_name )
 compare=$(comparison)
 
@@ -95,15 +94,20 @@ other=$(git ls-files --others --exclude-standard | wc -l)
 [[ $modified -gt 0 ]] && modified=${modified_symbol}$modified || modified=
 [[ $other    -gt 0 ]] && other=${other_symbol}$other          || other=
 
-if [[ ! -z $staged || ! -z $modified || ! -z $other ]] ; then
-    add="| #[fg=green]${staged}#[fg=red]${modified}#[fg=white]${other} "
-else
-    add=
-fi
-[[ ! -z $comparison ]] && comparison=$comparison" "
+[[ ! -z $compare ]] && compare=$compare
 
 if [[ $1 == "--tmux" ]] ; then
-    echo "#[fg=cyan][ #[fg=magenta,bold]${branch}#[fg=white]$comparison ${add}#[fg=cyan]] "
+    if [[ ! -z $staged || ! -z $modified || ! -z $other ]] ; then
+        add="| #[fg=green]${staged}#[fg=red]${modified}#[fg=white]${other} "
+    else
+        add=
+    fi
+    echo "#[fg=cyan][ #[fg=colour245]${branch_symbol} #[fg=magenta,bold]${branch}#[fg=white]$compare ${add}#[fg=cyan]] "
 else
-    echo ${branch} $comparison '|' $staged $modified $other
+    if [[ ! -z $staged || ! -z $modified || ! -z $other ]] ; then
+        add="| ${staged} ${modified} ${other} "
+    else
+        add=
+    fi
+    echo ${branch} $compare $add
 fi
