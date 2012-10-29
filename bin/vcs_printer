@@ -6,6 +6,10 @@ if [ "$?" -ne 0 ]; then
     return
 fi
 
+if [[ -f $HOME/.colors ]] ; then
+    . $HOME/.colors
+fi
+
 # get tmux cwd (from tmux-powerline)
 get_tmux_cwd() {
     local env_name=$(tmux display -p "TMUXPWD_#I_#P")
@@ -25,10 +29,11 @@ cd "$tmux_path"
 [[ -z $(git rev-parse --git-dir 2> /dev/null) ]] && exit
 
 # symbols
-branch_symbol="⭠"
-staged_symbol="⊕ "
-other_symbol="⋯ "
-modified_symbol="﹢"
+branch_symbol="${BLACK_BRIGHT}⭠${MAGENTA_BRIGHT}"
+compare_symbol="${WHITE_BRIGHT}"
+staged_symbol="${GREEN_BRIGHT}⊕ "
+other_symbol="${WHITE_BRIGHT}⋯ "
+modified_symbol="${RED_BRIGHT}﹢"
 
 branch_name(){
     # Quit if this is not a Git repo.
@@ -109,5 +114,5 @@ else
     else
         add=
     fi
-    echo ${branch} $compare $add
+    echo ${branch_symbol} ${branch} ${compare_symbol}$compare $add $NC
 fi
