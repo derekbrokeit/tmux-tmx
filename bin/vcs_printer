@@ -6,7 +6,7 @@ if [ "$?" -ne 0 ]; then
     return
 fi
 
-if [[ ! $1 == "--tmux" && -f $HOME/.colors ]] ; then
+if [[ $1 != "--tmux" && -f $HOME/.colors ]] ; then
     . $HOME/.colors
 fi
 # get tmux cwd (from tmux-powerline)
