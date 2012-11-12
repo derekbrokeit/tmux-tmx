@@ -6,12 +6,12 @@ if [ "$?" -ne 0 ]; then
     return
 fi
 
-if [[ -f $HOME/.colors ]] ; then
+if [[ ! $1 == "--tmux" && -f $HOME/.colors ]] ; then
     . $HOME/.colors
 fi
-
 # get tmux cwd (from tmux-powerline)
 get_tmux_cwd() {
+
     local env_name=$(tmux display -p "TMUXPWD_#I_#P")
     local env_val=$(tmux show-environment | grep "$env_name")
     # The version below is still quite new for tmux. Uncommented this in the future :-)
@@ -28,6 +28,7 @@ cd "$tmux_path"
 # is this git? if not don't print anything
 [[ -z $(git rev-parse --git-dir 2> /dev/null) ]] && exit
 
+# tmux colors
 # symbols
 branch_symbol="${BLACK_BRIGHT}⭠${MAGENTA_BRIGHT}"
 compare_symbol="${WHITE_BRIGHT}"
