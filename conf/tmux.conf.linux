@@ -1,0 +1,3 @@
+# status bar settings for linux computers
+set -g status-left "#[fg=green]#T ] #(vcs_printer --tmux)#[default]["
+set -g status-right "] #(statusline) #[fg=colour12][ %Y-%m-%d (#(dayofweek)) %R #[default]"
