@@ -51,16 +51,9 @@ TMUX_CONF=$HOME/.tmux.conf
 TMUX_CONF_NEST=$TMUX_CONF.nested
 TMUX_CONF_MINI=$TMUX_CONF.mini
 TMUX_CONF_OSX=$TMUX_CONF.osx
+
 # setup configuration files for this session
 fileConf=$TMUX_CONF
-insidetmux=0
-# OS specific configurations
-if [[ "$(uname)" == "Darwin" ]] ; then
-  # Add additional specifications for osx user
-  fileConf="$TMUX_CONF_OSX"
-fi
-# this checks if the terminal width is too small for regular status
-# this is helpful for phones or small terminal windows
 if [[ -n $COLUMNS ]] ; then
   # tput cols seems to always output a default of 80 when used as a variable or redirected value
   # therefore, we must limit this to zsh, which has the COLUMNS variable
@@ -72,7 +65,6 @@ fi
 # nested
 if [[ $TERM == screen* ]] ; then
    # make sure to use the nested-tmux configuration file
-   insidetmux=1
    fileConf=$TMUX_CONF_NEST
 fi
 
@@ -86,27 +78,11 @@ TEMP_TERM=$TERM
 TEMP_TERM_SUFFIX=${TERM#$(echo $TERM | cut -f 1 -d'-')}
 TERM="xterm${TEMP_TERM_SUFFIX}"
 
+
 # creating the base_session, but not connecting to it
 if [[ "$tmux_nb" == "0" ]]; then
    # no base session detected, launch it detached
    tmux -f $fileConf new-session -d -s $base_session
-
-   # make simulation-window
-   #sleep .3
-   #echo "-opening \"sims\" window"
-   ##resimwin
-   #if [[ $? -ne 0 ]] ; then
-      #echo "*** error occured using resimwin"
-      #exit 1
-   #fi
-
-   # opening up tabbed apps
-   #if [[ $COMP_TYPE == "local" ]] ; then
-      #tmvim $MD_SVN
-      #tmux neww -t $base_session:2 'mutt'
-      #tmux neww -t $base_session:3 'echo "l: $LINES c: $COLUMNS"; read -p "..." -n 1'
-   #fi
-   # now, we need to move back to the base window
 fi
 
 # it's time to attach to an existing session
