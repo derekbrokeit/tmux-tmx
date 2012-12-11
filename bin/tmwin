@@ -18,7 +18,10 @@ export TERM="xterm$TERM_POSTFIX"
 prog=$1
 shift 1
 exe="$@"
-if [[ "x$(which tmux)" != "x"  ]] ; then
+is_avail(){
+    command -v $1 > /dev/null 2>&1
+}
+if is_avail tmux ; then
   # tmux exists
   tmux rename-window "$prog"
   tmux -f $TMUX_CONF_TMWIN -L $prog new -s $prog -n $prog "$exe"

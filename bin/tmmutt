@@ -8,8 +8,12 @@ base_session="$progn"
 socket="-L $progn"
 fileconf="$HOME/.tmux.conf.invisible"
 
+is_avail() {
+    command -v $1 > /dev/null 2>&1
+}
+
 # make sure tmux exists first
-if [[ -x $(which tmux) ]] ; then
+if is_avail tmux ; then
   if [[ "x$(tmux $socket ls 2> /dev/null)" == "x" ]] ; then
     # make a new mutt session
     tmux $socket -f $fileconf new-session -d -s $base_session "$prog"
