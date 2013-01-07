@@ -3,10 +3,7 @@
 # tmux-powerline settings
 set-option -g status-left  "#(~/.rcbundles/tmux-powerline/status-left.sh)"
 set-option -g status-right "#(~/.rcbundles/tmux-powerline/status-right.sh)"
-# 
-# This is for setting up tmux-pasteboard
-# tmux-pasteboard: https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard
-set-option -g default-command "reattach-to-user-namespace -l zsh"
-bind-key Y run-shell "tmux save-buffer - | reattach-to-user-namespace pbcopy"
 
-#set-option -g default-shell "/usr/local/bin/zsh"
+# This is for fixing tmux-pasteboard
+if-shell "reattach-to-user-namespace pbpaste" "set-option -g default-command 'reattach-to-user-namespace -l zsh'"
+if-shell "reattach-to-user-namespace pbpaste" "bind-key Y run-shell 'tmux save-buffer - | reattach-to-user-namespace pbcopy'"
