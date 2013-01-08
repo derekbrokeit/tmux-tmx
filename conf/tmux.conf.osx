@@ -1,8 +1,8 @@
 # source the main file
 
 # tmux-powerline settings
-set-option -g status-left  "#(~/.rcbundles/tmux-powerline/status-left.sh)"
-set-option -g status-right "#(~/.rcbundles/tmux-powerline/status-right.sh)"
+set-option -g status-left  "#(~/.rcbundles/tmux-powerline/powerline.sh left)"
+set-option -g status-right "#(~/.rcbundles/tmux-powerline/powerline.sh right)"
 
 # This is for fixing tmux-pasteboard
 if-shell "reattach-to-user-namespace pbpaste" "set-option -g default-command 'reattach-to-user-namespace -l zsh'"
