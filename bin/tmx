@@ -23,6 +23,10 @@ if [[ $1 == "--no-clean" ]] ; then
 else
     NO_CLEAN=0
 fi
+if [[ $1 == "--force" ]] ; then
+    shift 1
+    export TMUX=
+fi
 
 if [[ -z "$1" ]]; then
     echo "Specify session name as the first argument"
@@ -87,7 +91,7 @@ fi
 
 # it's time to attach to an existing session
 # Make sure we are not already in a tmux session 
-if [[ -z "$TMUX" ]]; then
+if [[ -z $TMUX ]]; then
    # this gaurds against locally-nested tmux-sessions
 
    # Kill defunct sessions first
