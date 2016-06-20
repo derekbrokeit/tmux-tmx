@@ -3,7 +3,7 @@
 # The benefit of this implementation is that it can attach 
 # independently through a new-session
 #
-# Modified TMUX start script from:
+# Modified MUX start script from:
 #  http://mutelight.org/articles/practical-tmux  
 #
 
@@ -86,7 +86,7 @@ TERM="xterm${TEMP_TERM_SUFFIX}"
 # creating the base_session, but not connecting to it
 if [[ "$tmux_nb" == "0" ]]; then
    # no base session detected, launch it detached
-   tmux -f $fileConf new-session -d -s $base_session
+   tmux -u2 -f $fileConf new-session -d -s $base_session
 fi
 
 # it's time to attach to an existing session
@@ -101,7 +101,7 @@ if [[ -z $TMUX ]]; then
       old_sessions=$(tmux ls 2>/dev/null | egrep "^[0-9]{14}" | cut -f 1 -d:)
       for old_session_id in $old_sessions; do
           echo "kill old tm-session: $old_session_id"
-          tmux kill-session -t $old_session_id
+          tmux -u2 kill-session -t $old_session_id
       done
    }
 
@@ -114,16 +114,16 @@ if [[ -z $TMUX ]]; then
    session_id=`date +"%Y%m%d%H%M%S"`
    # Create a new session (without attaching it) and link to base session 
    # to share windows
-   tmux new-session -d -t $base_session -s $session_id
+   tmux -u2 new-session -d -t $base_session -s $session_id
    # Create a new window in that session
    #tmux new-window
 
    # Attach to the new session @window:0
-   tmux select-window -t  $session_id:0
-   tmux attach-session -t $session_id \; source-file $fileConf 
+   tmux -u2 select-window -t  $session_id:0
+   tmux -u2 attach-session -t $session_id \; source-file $fileConf 
 
    # When we detach from it, kill the session
-   tmux kill-session -t $session_id 2> /dev/null
+   tmux -u2 kill-session -t $session_id 2> /dev/null
 fi
  
 # reset the terminal attribute
